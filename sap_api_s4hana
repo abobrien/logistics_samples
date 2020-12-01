@@ -1,0 +1,62 @@
+def sap_inbound(service_url, detail_level, api_key, delivery_number=None, timeout=5.0):
+    """
+    Call SAP inbound delivery API.
+    SAP API documentation @  https://api.sap.com/api/API_WHSE_INBOUND_DELIVERY/resource
+
+    Args:
+        service_url (string): URL for API service.
+        api_key (string): API key for SAP API Business Hub.
+        detail_level (string): Specify 'header' or 'item' level detail.
+        delivery_number (string, optional): Delivery number in SAP. Defaults to all deliveries.
+        timeout (float, optional): Timeout in seconds.
+
+    Returns:
+        JSON object.
+    """
+    # Import dependencies
+    import requests
+
+    # Define API requirements
+    headers = {'APIKey' : api_key, 'Content-Type' : 'application/json', 'Accept' : 'application/json'}
+    params = {}
+
+    if detail_level == 'header':
+        url = service_url + '(\'' + delivery_number + '\')'
+    elif detail_level == 'item':
+        url = service_url + '(\'' + delivery_number + '\')' + '/to_WhseInboundDeliveryItem'
+    else:
+        raise Exception('detail_level must be \'header\' or \'item\'')
+
+    # Prepare request
+    message = requests.Request('GET', url, headers=headers, params=params)
+    request = message.prepare()
+
+    # Send request & store response as JSON
+    session = requests.Session()
+    response = session.send(request, timeout=timeout)
+    json_output = response.json()
+
+    # Print user feedback
+    print('Status: ' + str(response))
+
+    return json_output
+    
+# Define variables for header level (MKPF) call
+service_url = 'https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_WHSE_OUTB_DLV_ORDER/WhseOutboundDeliveryOrderHead' 
+detail_level = 'header'
+api_key = 'XXXXXXXXXX'          # register @ https://api.sap.com
+delivery_number = '80075418'    # sample DN provided by SAP for testing
+timeout = 2.0
+
+# Call function for header level (MKPF) data
+validate = sap_api.sap_outbound(service_url=service_url, detail_level=detail_level, api_key=api_key, delivery_number=delivery_number, timeout=timeout)
+
+# Define variables for detail level (MSEG) call
+service_url = 'https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_WHSE_OUTB_DLV_ORDER/WhseOutboundDeliveryOrderHead' 
+detail_level = 'item'
+api_key = 'XXXXXXXXXX'          # register @ https://api.sap.com
+delivery_number = '80075418'    # sample DN provided by SAP for testing
+timeout = 2.0
+
+# Call function for detail level (MSEG) data
+validate = sap_api.sap_outbound(service_url=service_url, detail_level=detail_level, api_key=api_key, delivery_number=delivery_number, timeout=timeout)
